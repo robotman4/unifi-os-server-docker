@@ -1,0 +1,7 @@
+# Ubiquiti binaries: download them yourself (see README)
+installer.bin
+*.deb
+# local config / data
+.env
+backup/
+build.log

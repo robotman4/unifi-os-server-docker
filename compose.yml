@@ -1,0 +1,57 @@
+services:
+  uos:
+    build: .
+    image: uos:6.0.19-11.0.99
+    restart: unless-stopped
+    cgroup: host # UOS runs systemd as PID 1
+    cap_add:
+      - NET_RAW
+      - NET_ADMIN
+    environment:
+      - TZ=Europe/Stockholm
+      - UOS_SYSTEM_IP=${UOS_SYSTEM_IP}
+      - MONGO_INTERNAL=true # Network app runs its bundled mongod (unifi-mongodb.service)
+    # UI is served via Traefik (container port 443). Device ports, needed for adoption:
+    # ports:
+    #   - 8080:8080         # inform
+    #   - 3478:3478/udp     # STUN
+    #   - 10003:10003/udp   # discovery (LAN only)
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:rw
+      # Named volumes, like the official installer: they get seeded from the image on first start.
+      - data:/data
+      - persistent:/persistent
+      - srv:/srv
+      - unifi:/var/lib/unifi
+      - mongodb:/var/lib/mongodb
+      - rabbitmq-ssl:/etc/rabbitmq/ssl
+    tmpfs:
+      - /run:exec
+      - /run/lock
+      - /tmp:exec
+      - /var/log/journal
+      - /var/opt/unifi/tmp:size=64m
+      - /data/unifi-core/config/http
+    networks:
+      proxy_internal:
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.uos.service=uos-service
+      - traefik.http.routers.uos.entrypoints=https
+      - traefik.http.routers.uos.tls=true
+      - traefik.http.routers.uos.rule=Host(`${DOMAIN}`)
+      - traefik.http.services.uos-service.loadbalancer.server.port=443
+      - traefik.http.services.uos-service.loadbalancer.server.scheme=https
+      - traefik.http.services.uos-service.loadbalancer.passhostheader=true
+
+volumes:
+  data:
+  persistent:
+  srv:
+  unifi:
+  mongodb:
+  rabbitmq-ssl:
+
+networks:
+  proxy_internal:
+    external: true
