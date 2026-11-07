@@ -45,10 +45,17 @@ FROM scratch
 
 COPY --from=extractor /rootfs /
 
-# Upgrade the bundled Network app (10.6.106) to whatever unifi.deb is.
+# Upgrade the bundled Network app (10.6.106). unifi.deb must match NETWORK_VERSION;
+# override for betas: docker compose build --build-arg NETWORK_VERSION=11.1.47
+ARG NETWORK_VERSION="11.0.99"
 # Ubiquiti's dpkg hooks log via systemd-cat, which needs journald; park them during the build.
 RUN --mount=type=bind,target=/debs <<'INSTALL'
 set -e
+deb=$(dpkg-deb -f /debs/unifi.deb Version)
+case "$deb" in
+    "$NETWORK_VERSION"-*) ;;
+    *) echo "unifi.deb is $deb, expected NETWORK_VERSION=$NETWORK_VERSION" >&2; exit 1 ;;
+esac
 hooks="/etc/dpkg/dpkg.cfg.d/015-ubnt-dpkg-status /etc/dpkg/dpkg.cfg.d/020-ubnt-dpkg-cache"
 mkdir /tmp/hooks && mv $hooks /tmp/hooks/
 dpkg -i /debs/unifi-matter-controller.deb /debs/unifi.deb

@@ -27,10 +27,11 @@ Open `https://$DOMAIN` and run the setup wizard.
 
 ## Update
 
-Get a new `installer.bin` and/or run `./fetch-debs.py`, bump the image tag in `compose.yml`,
-then `docker compose up -d --build`. Don't update from the UI (it won't work in Docker).
+Get a new `installer.bin` and/or run `./fetch-debs.py <version>`, bump `NETWORK_VERSION` in the `Dockerfile`
+(the build refuses a deb that doesn't match) and the image tag in `compose.yml`, then `docker compose up -d --build`. Don't update from the UI (it won't work in Docker).
 
-Betas: `./fetch-debs.py --beta` (needs your instance's update token, see `./fetch-debs.py --help`).
+Betas: `./fetch-debs.py --beta` (needs your instance's update token, see `./fetch-debs.py --help`), then
+`docker compose build --build-arg NETWORK_VERSION=<beta version>`.
 
 ## How it works
 
