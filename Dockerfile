@@ -45,7 +45,7 @@ FROM scratch
 
 COPY --from=extractor /rootfs /
 
-# Upgrade the bundled Network app (10.6.106) to 11.0.99.
+# Upgrade the bundled Network app (10.6.106) to whatever unifi.deb is.
 # Ubiquiti's dpkg hooks log via systemd-cat, which needs journald; park them during the build.
 RUN --mount=type=bind,target=/debs <<'INSTALL'
 set -e
@@ -53,7 +53,7 @@ hooks="/etc/dpkg/dpkg.cfg.d/015-ubnt-dpkg-status /etc/dpkg/dpkg.cfg.d/020-ubnt-d
 mkdir /tmp/hooks && mv $hooks /tmp/hooks/
 dpkg -i /debs/unifi-matter-controller.deb /debs/unifi.deb
 mv /tmp/hooks/* /etc/dpkg/dpkg.cfg.d/ && rmdir /tmp/hooks
-dpkg-query -W unifi | grep -q '11.0.99'
+[ "$(dpkg-query -W -f='${Version}' unifi)" = "$(dpkg-deb -f /debs/unifi.deb Version)" ]
 INSTALL
 
 # The setup wizard asks the host-side "UOS Server Manager" (uosserver-service, connects in over UCP4)
