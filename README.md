@@ -30,6 +30,8 @@ Open `https://$DOMAIN` and run the setup wizard.
 Get a new `installer.bin` and/or run `./fetch-debs.py`, bump the image tag in `compose.yml`,
 then `docker compose up -d --build`. Don't update from the UI (it won't work in Docker).
 
+Betas: `./fetch-debs.py --beta` (needs your instance's update token, see `./fetch-debs.py --help`).
+
 ## How it works
 
 - The installer is an ELF with a zip appended. The Dockerfile unzips `image.tar` and flattens it into a rootfs.
